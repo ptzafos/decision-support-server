@@ -5,9 +5,13 @@ import (
 	"fmt"
 	"net/http"
 	"os"
+	"sync"
 )
 
 var balance float64
+var sellTrades = 100
+var buyTrades = 100
+var mutex = &sync.Mutex{}
 
 type pandoraRequest struct {
 	Key   string  `json:"key"`
@@ -30,14 +34,31 @@ func decisionMaking(request pandoraRequest) {
 }
 
 func buy(key string, price float64) {
-	balance -= price
-	fmt.Println("Buy order:", key, "@", price, "- Current balance:", balance)
+	if buyTrades > 0 {
+		mutex.Lock()
+		balance -= price
+		buyTrades--
+		checkAndresetVolTrades()
+		mutex.Unlock()
+		fmt.Println("Buy order:", key, "@", price, "- Current balance:", balance)
+	}
 }
 
 func sell(key string, price float64) {
-	if balance > 0.0 {
+	if buyTrades > sellTrades && sellTrades > 0 {
+		mutex.Lock()
 		balance += price
+		sellTrades--
+		checkAndresetVolTrades()
+		mutex.Unlock()
 		fmt.Println("Sell order:", key, "@", price, "- Current balance:", balance)
+	}
+}
+
+func checkAndresetVolTrades() {
+	if sellTrades == 0 && buyTrades == 0 {
+		sellTrades = 100
+		buyTrades = 100
 	}
 }
 
