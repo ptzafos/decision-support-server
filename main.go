@@ -10,10 +10,10 @@ import (
 var balance float64
 
 type pandoraRequest struct {
-	Key   string
-	Close float64
-	Macd  float64
-	Rsi   float64
+	Key   string  `json:"key"`
+	Close float64 `json:"close"`
+	Macd  float64 `json:"macd"`
+	Rsi   float64 `json:"rsi"`
 }
 
 func decisionMaking(request pandoraRequest) {
@@ -35,8 +35,10 @@ func buy(key string, price float64) {
 }
 
 func sell(key string, price float64) {
-	balance += price
-	fmt.Println("Sell order:", key, "@", price, "- Current balance:", balance)
+	if balance > 0.0 {
+		balance += price
+		fmt.Println("Sell order:", key, "@", price, "- Current balance:", balance)
+	}
 }
 
 func postHandler(w http.ResponseWriter, r *http.Request) {
@@ -47,6 +49,8 @@ func postHandler(w http.ResponseWriter, r *http.Request) {
 			http.Error(w, "Error parsing request body", http.StatusBadRequest)
 			panic(parseErr)
 		}
+		// strData, _ := json.Marshal(data)
+		// fmt.Println(string(strData))
 		decisionMaking(data)
 		fmt.Fprint(w, "Pandora Analytics Server: Request Received!")
 	} else {
