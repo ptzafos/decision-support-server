@@ -40,18 +40,18 @@ func buy(key string, price float64) {
 		buyTrades--
 		checkAndresetVolTrades()
 		mutex.Unlock()
-		fmt.Println("Buy order:", key, "@", price, "- Current balance:", balance)
+		fmt.Println("Buy order:", key, "@", price, "- Current balance:", balance, "s:", sellTrades, "b:", buyTrades)
 	}
 }
 
 func sell(key string, price float64) {
-	if buyTrades > sellTrades && sellTrades > 0 {
+	if buyTrades < sellTrades && sellTrades > 0 {
 		mutex.Lock()
 		balance += price
 		sellTrades--
 		checkAndresetVolTrades()
 		mutex.Unlock()
-		fmt.Println("Sell order:", key, "@", price, "- Current balance:", balance)
+		fmt.Println("Sell order:", key, "@", price, "- Current balance:", balance, "s:", sellTrades, "b:", buyTrades)
 	}
 }
 
